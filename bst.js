@@ -101,12 +101,88 @@ class Tree {
         }
       }
     }
+
+    levelOrderForEach(callback) {
+      if (typeof callback !== "function") {
+        throw new Error("Callback function is required");
+      }
+
+      let node = this.root;
+      let queue = [node];
+
+      while (queue.length !== 0) {
+        node = queue.shift();
+        callback(node);
+        if (node.left !== null) {
+          queue.push(node.left);
+        }
+        if (node.right !== null) {
+          queue.push(node.right);
+        }
+      }
+    }
+
+    inOrderForEach(callback, root = this.root) {
+      if (typeof callback !== "function") {
+        throw new Error("Callback function is required");
+      }
+
+      if (root === null) return;
+      this.inOrderForEach(callback, root.left);
+      callback(root);
+      this.inOrderForEach(callback, root.right);
+    }
+
+    preOrderForEach(callback, root = this.root) {
+      if (typeof callback !== "function") {
+        throw new Error("Callback function is required");
+      }
+
+      if (root === null) return;
+      callback(root);
+      this.preOrderForEach(callback, root.left);
+      this.preOrderForEach(callback, root.right);
+    }
+
+    postOrderForEach(callback, root = this.root) {
+      if (typeof callback !== "function") {
+        throw new Error("Callback function is required");
+      }
+
+      if (root === null) return;
+      this.postOrderForEach(callback, root.left);
+      this.postOrderForEach(callback, root.right);
+      callback(root);
+    }
+
 }
 
 
-
 let myArr = [50, 30, 20, 40, 32, 34, 36, 70, 60, 80, 65, 75, 85]
-let myTree = new Tree(myArr);
+let myArr2 = [2,6,8,7,9]
+let myArr3 = [200, 150, 350, 400, 450, 60, 700, 250, 180, 500]
+
+let myTree = new Tree(myArr3);
+
+
+let newArr1 = []
+let newArr2 = []
+let newArr3 = []
+
+
+myTree.preOrderForEach((node) => newArr1.push(node.data));
+myTree.inOrderForEach((node) => newArr2.push(node.data));
+myTree.postOrderForEach((node) => newArr3.push(node.data));
+
+
+console.log(`Preorder Traversal Output:`)
+console.log(newArr1)
+
+console.log(`Inorder Traversal Output:`)
+console.log(newArr2)
+
+console.log(`Postorder Traversal Output:`)
+console.log(newArr3)
 
 
 const prettyPrint = (node, prefix = '', isLeft = true) => {
