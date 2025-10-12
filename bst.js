@@ -8,22 +8,25 @@ class Node {
 
 class Tree {
     constructor(arr) {
-        this.arr = arr;
+        this.arr = this.sortAndDedupeArray(arr);
         this.root = this.buildTree(this.arr);
     }
 
     buildTree(array, start = 0, end = array.length - 1) {
-        //sort array and remove duplicate values
-        let arr = [...new Set(array.sort((a, b) => a - b))];
+      if (start > end) return null;
 
-        if (start > end) return null;
-        let mid = Math.floor((start + end) / 2);
-        let root = new Node(arr[mid]);
+      let mid = Math.floor((start + end) / 2);
+      let root = new Node(array[mid]);
 
-        root.left = this.buildTree(arr.slice(start, mid));
-        root.right = this.buildTree(arr.slice(mid + 1, arr.length));
+      root.left = this.buildTree(array, start, mid - 1);
+      root.right = this.buildTree(array, mid + 1, end);
 
-        return root;
+      return root;
+    }
+
+    sortAndDedupeArray(arr) {
+      let newArr = [...new Set(arr.sort((a, b) => a - b))];
+      return newArr;
     }
 
     insert(value) {
@@ -64,7 +67,6 @@ class Tree {
       } else if (root.data < value) {
         root.right = this.deleteItem(value, root.right);
       } 
-      //found node has zero or one child
       else {
         if (root.left === null) {
           return root.right;
@@ -72,7 +74,7 @@ class Tree {
         if (root.right === null) {
           return root.left;
         }
-        //node has two children
+
         let succ = this.getSuccessor(root);
         root.data = succ.data;
         root.right = this.deleteItem(succ.data, root.right);
@@ -92,6 +94,7 @@ class Tree {
       let currNode = this.root;
 
       while(true) {
+        if (currNode === null) return null;
         if (value < currNode.data) {
           currNode = currNode.left
         } else if (value > currNode.data) {
@@ -155,47 +158,56 @@ class Tree {
       callback(root);
     }
 
+    height(value) {
+      let node = value;
+      if (typeof value != "object") {
+        node = this.find(value);
+        if (node === null) {
+          return null;
+        }
+      };
+
+      if (node === null) return -1;
+
+      return 1 + Math.max(this.height(node.left), this.height(node.right));
+    }
+
+    depth(value, root = this.root) {
+      let node = value;
+      if (typeof value != "object") {
+        node = this.find(value);
+        if (node === null) {
+          return null;
+        }
+      };
+
+      if (root === null) return -1;
+
+      let dist = -1;
+
+      if (root.data === node.data ||
+        (dist =  this.depth(value, root.left)) >= 0 ||
+        (dist =  this.depth(value, root.right)) >= 0) {
+          return dist + 1;
+        }
+
+      return dist;
+    }
+
+    isBalanced(root = this.root) {
+      if (root === null) return true;
+
+      return this.isBalanced(root.left) && 
+      this.isBalanced(root.right) &&
+      Math.abs(this.height(root.left) - this.height(root.right)) <= 1;
+    }
+
+    rebalance() {
+      if (this.isBalanced() === true) return;
+
+      let newArr = [];
+      this.inOrderForEach((node) => newArr.push(node.data));
+      this.root = this.buildTree(newArr);
+
+    }
 }
-
-
-let myArr = [50, 30, 20, 40, 32, 34, 36, 70, 60, 80, 65, 75, 85]
-let myArr2 = [2,6,8,7,9]
-let myArr3 = [200, 150, 350, 400, 450, 60, 700, 250, 180, 500]
-
-let myTree = new Tree(myArr3);
-
-
-let newArr1 = []
-let newArr2 = []
-let newArr3 = []
-
-
-myTree.preOrderForEach((node) => newArr1.push(node.data));
-myTree.inOrderForEach((node) => newArr2.push(node.data));
-myTree.postOrderForEach((node) => newArr3.push(node.data));
-
-
-console.log(`Preorder Traversal Output:`)
-console.log(newArr1)
-
-console.log(`Inorder Traversal Output:`)
-console.log(newArr2)
-
-console.log(`Postorder Traversal Output:`)
-console.log(newArr3)
-
-
-const prettyPrint = (node, prefix = '', isLeft = true) => {
-  if (node === null) {
-    return;
-  }
-  if (node.right !== null) {
-    prettyPrint(node.right, `${prefix}${isLeft ? '│   ' : '    '}`, false);
-  }
-  console.log(`${prefix}${isLeft ? '└── ' : '┌── '}${node.data}`);
-  if (node.left !== null) {
-    prettyPrint(node.left, `${prefix}${isLeft ? '    ' : '│   '}`, true);
-  }
-};
-
-prettyPrint(myTree.root)
